@@ -44,7 +44,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
         -C ${TMP_DIR} &&\
     cd ${TMP_DIR}/nginx-release-${NGINX_VERSION} &&\
     ./auto/configure \
-        --add-module=${TMP_DIR}/ngx_pagespeed-${NPS_VERSION}-beta \
+        --add-module=${NPS_DIR} \
 	--add-module=${TMP_DIR}/ngx_cache_purge-${CACHE_PURGE_VERSION} \
         --prefix=/etc/nginx \
 	--sbin-path=/usr/sbin/nginx \

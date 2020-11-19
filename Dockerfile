@@ -63,67 +63,55 @@ RUN cd /tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable/ && \
 	curl -L ${psol_url} | tar -xz
 
 # Build in additional Nginx modules
-RUN cd /tmp && \
-	git clone git://github.com/vozlt/nginx-module-vts.git && \
-	git clone https://github.com/FRiCKLE/ngx_cache_purge.git && \
-	git clone https://github.com/simplresty/ngx_devel_kit.git && \
-	git clone https://github.com/leev/ngx_http_geoip2_module.git && \
-	git clone https://github.com/openresty/echo-nginx-module.git && \
-	git clone https://github.com/onnimonni/redis-nginx-module.git && \
-	git clone https://github.com/openresty/redis2-nginx-module.git && \
-	git clone https://github.com/openresty/srcache-nginx-module.git && \
-	git clone https://github.com/openresty/set-misc-nginx-module.git && \
-	git clone https://github.com/openresty/headers-more-nginx-module.git && \
-	git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
-
-RUN ls -la /tmp/
-RUN ls -la /tmp/ngx_http_geoip2_module
+RUN cd /tmp && git clone https://github.com/FRiCKLE/ngx_cache_purge.git && \
 
 # Build Nginx with support for PageSpeed
 RUN cd /tmp && \
 	curl -L http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -zx && \
 	cd /tmp/nginx-${NGINX_VERSION} && \
 	LD_LIBRARY_PATH=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}/usr/lib:/usr/lib ./configure \
-	--sbin-path=/usr/sbin \
-	--modules-path=/usr/lib/nginx \
-	--with-http_ssl_module \
-	--with-http_gzip_static_module \
-	--with-file-aio \
-	--with-http_v2_module \
-	--with-http_realip_module \
-	--with-http_sub_module \
-	--with-http_gunzip_module \
-	--with-http_secure_link_module \
-	--with-http_stub_status_module \
-	--with-threads \
-	--with-stream \
-	--with-stream_ssl_module \
-	--without-http_autoindex_module \
-	--without-http_browser_module \
-	--without-http_userid_module \
-	--without-mail_pop3_module \
-	--without-mail_imap_module \
-	--without-mail_smtp_module \
-	--without-http_split_clients_module \
-	--without-http_uwsgi_module \
-	--without-http_scgi_module \
-	--without-http_upstream_ip_hash_module \
-	--prefix=/etc/nginx \
-	--conf-path=/etc/nginx/nginx.conf \
-	--http-log-path=/var/log/nginx/access.log \
-	--error-log-path=/var/log/nginx/error.log \
-	--pid-path=/var/run/nginx.pid \
-	--add-module=/tmp/ngx_devel_kit \
+	--prefix=/etc/nginx 
+	--sbin-path=/usr/sbin/nginx 
+	--modules-path=/usr/lib/nginx/modules 
+	--conf-path=/etc/nginx/nginx.conf 
+	--error-log-path=/var/log/nginx/error.log 
+	--http-log-path=/var/log/nginx/access.log 
+	--pid-path=/var/run/nginx.pid 
+	--lock-path=/var/run/nginx.lock 
+	--http-client-body-temp-path=/var/cache/nginx/client_temp 
+	--http-proxy-temp-path=/var/cache/nginx/proxy_temp 
+	--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp 
+	--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp 
+	--http-scgi-temp-path=/var/cache/nginx/scgi_temp 
+	--user=nginx 
+	--group=nginx 
+	--with-compat 
+	--with-file-aio 
+	--with-threads 
+	--with-http_addition_module 
+	--with-http_auth_request_module 
+	--with-http_dav_module 
+	--with-http_flv_module 
+	--with-http_gunzip_module 
+	--with-http_gzip_static_module 
+	--with-http_mp4_module 
+	--with-http_random_index_module 
+	--with-http_realip_module 
+	--with-http_secure_link_module 
+	--with-http_slice_module 
+	--with-http_ssl_module 
+	--with-http_stub_status_module 
+	--with-http_sub_module 
+	--with-http_v2_module 
+	--with-mail 
+	--with-mail_ssl_module 
+	--with-stream 
+	--with-stream_realip_module 
+	--with-stream_ssl_module 
+	--with-stream_ssl_preread_module 
+	--with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-1.19.3/debian/debuild-base/nginx-1.19.3=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' 
+	--with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie'
 	--add-module=/tmp/ngx_cache_purge \
-	--add-module=/tmp/nginx-module-vts \
-	--add-module=/tmp/echo-nginx-module \
-	--add-module=/tmp/redis-nginx-module \
-	--add-module=/tmp/redis2-nginx-module \
-	--add-module=/tmp/srcache-nginx-module \
-	--add-module=/tmp/set-misc-nginx-module \
-	--add-module=/tmp/ngx_http_geoip2_module \
-	--add-module=/tmp/headers-more-nginx-module \
-	--add-module=/tmp/ngx_http_substitutions_filter_module \
 	--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable && \
 	make install --silent
 
@@ -137,27 +125,9 @@ RUN rm -rf /var/lib/apt/lists/* && rm -rf /tmp/* && \
 	mkdir -p /var/cache/ngx_pagespeed && \
 	chmod -R o+wr /var/cache/ngx_pagespeed
 
-### MaxMind not longer supports database downloads
-### so upload them yourself into /usr/share/GeoIP2 folder
-RUN mkdir -p /usr/share/GeoIP2
-ADD ./geoip2/* /usr/share/GeoIP2/
-
-### MaxMind Deprecated GeoIP2 databases download URLs
-# RUN cd /usr/share/GeoIP2 && \
-# 	curl -L -O https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz && \
-# 	curl -L -O https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz && \
-# 	gzip -d *
-
-# Inject Nginx configuration files
-COPY ./config/conf.d              /etc/nginx/conf.d
-COPY ./config/include             /etc/nginx/include
-COPY ./config/nginx.conf          /etc/nginx/nginx.conf
-COPY ./config/fastcgi_params.orig /etc/nginx/fastcgi_params.orig
-COPY ./scripts                    /usr/local/bin/
-
 RUN chmod +x /usr/local/bin/*
 
-EXPOSE 80 8080
+EXPOSE 80
 WORKDIR /etc/nginx
 
 HEALTHCHECK --interval=5s --timeout=5s CMD curl -I http://127.0.0.1:8080/health || exit 1

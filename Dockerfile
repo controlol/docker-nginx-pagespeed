@@ -1,60 +1,49 @@
-FROM debian:stretch-slim
+FROM debian:latest
+MAINTAINER Luc Appelman "lucapppelman@gmail.com"
 
-ARG NGINX_VERSION=1.19.3
-ARG PAGESPEED_VERSION=1.13.35.2
+# inspired by the official nginx docker container
+# https://github.com/nginxinc/docker-nginx/blob/master/Dockerfile
 
-RUN apt-get update -y && \
-	apt-get upgrade -y
+RUN apt-get update
+RUN apt-get install -y build-essential \
+    curl \
+    libpcre3 \
+    libpcre3-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    tar \
+    unzip \
+    zlib1g-dev 
+RUN rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y \
-	apt-utils \
-	git nano \
-	g++ \
-	gcc \
-	curl \
-	make \
-	unzip \
-	bzip2 \
-	gperf \
-	python \
-	openssl \
-	libuuid1 \
-	apt-utils \
-	pkg-config \
-	icu-devtools \
-	build-essential \
-	ca-certificates \
-	uuid-dev \
-	zlib1g-dev \
-	libicu-dev \
-	libssl-dev \
-	apache2-dev \
-	libpcre3 \
-	libpcre3-dev \
-	libmaxminddb-dev \
-	libpng-dev \
-	libaprutil1-dev \
-	linux-headers-amd64 \
-	libjpeg62-turbo-dev \
-	libcurl4-openssl-dev
-
-RUN cd /tmp && \
-	curl -O -L https://github.com/pagespeed/ngx_pagespeed/archive/v${PAGESPEED_VERSION}-stable.zip && \
-	unzip v${PAGESPEED_VERSION}-stable.zip && cd /tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable/ && \
-	psol_url=https://dl.google.com/dl/page-speed/psol/${PAGESPEED_VERSION}.tar.gz && \
-	[ -e scripts/format_binary_url.sh ] && psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL) && \
-	echo "URL: ${psol_url}" && \
-	curl -L ${psol_url} | tar -xz
-
-# Build in additional Nginx modules
-RUN cd /tmp && git clone https://github.com/FRiCKLE/ngx_cache_purge.git
-
-# Build Nginx with support for PageSpeed
-RUN cd /tmp && \
-	curl -L http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -zx && \
-	cd /tmp/nginx-${NGINX_VERSION} && \
-	./configure \
-	--prefix=/etc/nginx \
+RUN NPS_VERSION=1.13.35.2 \
+    PCRE_VERSION=8.44 \
+    NGINX_VERSION=1.19.3 \
+    ZLIB_VERSION=1.2.11 \
+    OPENSSL_VERSION=1_1_1g \
+    NGINX_LOG_PATH=/var/log/nginx \
+    NGINX_USER=www-data \
+    NGINX_GROUP=www-data \
+    TMP_DIR=$(mktemp -d) &&\
+    curl -Ls https://github.com/pagespeed/ngx_pagespeed/archive/v${NPS_VERSION}-beta.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR} &&\
+    curl -Ls https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR}/ngx_pagespeed-${NPS_VERSION}-beta --exclude=lib/Debug &&\
+    curl -Ls https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR} &&\
+    curl -Ls ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR} &&\
+    curl -Ls https://github.com/madler/zlib/archive/v1.2.8.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR} &&\
+    curl -Ls https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VERSION}.tar.gz | tar -xzvf - \
+        -C ${TMP_DIR} &&\
+    curl -Ls https://github.com/FRiCKLE/ngx_cache_purge/archive/2.3.tar.gz | tar -xzvf - \
+        -C ${TMP_DIR} &&\
+    cd ${TMP_DIR}/nginx-release-${NGINX_VERSION} &&\
+    ./auto/configure \
+        --add-module=${TMP_DIR}/ngx_pagespeed-${NPS_VERSION}-beta \
+	--add-module=${TMP_DIR}/2.3 \
+        --prefix=/etc/nginx \
 	--sbin-path=/usr/sbin/nginx \
 	--modules-path=/usr/lib/nginx/modules \
 	--conf-path=/etc/nginx/nginx.conf \
@@ -62,14 +51,11 @@ RUN cd /tmp && \
 	--http-log-path=/var/log/nginx/access.log \
 	--pid-path=/var/run/nginx.pid \
 	--lock-path=/var/run/nginx.lock \
-	#--http-client-body-temp-path=/var/cache/nginx/client_temp \
-	#--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-	#--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-	#--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-	#--http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-	#--user=nginx \
-	#--group=nginx \
-	--with-compat \
+	--group=${NGINX_GROUP} \
+        --user=${NGINX_USER} \
+        --with-cc-opt='-D_FORTIFY_SOURCE=2 -pie -fPIE -fstack-protector -Wformat -Wformat-security -fstack-protector -g -O1' \
+        --with-ld-opt='-Wl,-z,now -Wl,-z,relro' \
+        --with-compat \
 	--with-file-aio \
 	--with-threads \
 	--with-http_addition_module \
@@ -93,33 +79,26 @@ RUN cd /tmp && \
 	--with-stream_realip_module \
 	--with-stream_ssl_module \
 	--with-stream_ssl_preread_module \
-	--with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-1.19.3/debian/debuild-base/nginx-1.19.3=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
-	--with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
-	--add-module=/tmp/ngx_cache_purge \
-	--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable \
-	&& \
-	make install 
-	#--silent
+        --with-http_ssl_module --with-openssl=${TMP_DIR}/openssl-OpenSSL_${OPENSSL_VERSION} \
+        --with-pcre=${TMP_DIR}/pcre-${PCRE_VERSION} \
+        --with-zlib=${TMP_DIR}/zlib-${ZLIB_VERSION} &&\
+    make &&\
+    make install &&\
+    cd / && rm -rf ${TMP_DIR}
 
-# Clean-up
-RUN apt-get remove -y git
-RUN rm -rf /var/lib/apt/lists/* && rm -rf /tmp/* && \
-	# Forward request and error logs to docker log collector
-	ln -sf /dev/stdout /var/log/nginx/access.log && \
-	ln -sf /dev/stderr /var/log/nginx/error.log && \
-	# Make PageSpeed cache writable
-	mkdir -p /var/cache/ngx_pagespeed && \
-	chmod -R o+wr /var/cache/ngx_pagespeed
+# Clean-up && Make PageSpeed cache writable
+RUN rm -rf /var/lib/apt/lists/* && rm -rf ${TMP_DIR}/* && \
+	mkdir -p /tmp/ngx_pagespeed && \
+	chmod -R o+wr /tmp/ngx_pagespeed
 
-COPY ./config  /etc/nginx
-COPY ./scripts /usr/local/bin/
+# COPY ./config  /etc/nginx
 
-RUN chmod +x /usr/local/bin/*
-
-EXPOSE 80
+EXPOSE 80 443
 WORKDIR /etc/nginx
 
 STOPSIGNAL SIGTERM
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

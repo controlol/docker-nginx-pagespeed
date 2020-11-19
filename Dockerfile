@@ -112,7 +112,7 @@ RUN cd /tmp && \
 	--with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-1.19.3/debian/debuild-base/nginx-1.19.3=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
 	--with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
 	--add-module=/tmp/ngx_cache_purge \
-	--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable && \
+	#--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable && \
 	make install --silent
 
 # Clean-up

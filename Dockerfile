@@ -40,9 +40,7 @@ RUN apt-get install -y \
 
 RUN cd /tmp && \
 	curl -O -L https://github.com/pagespeed/ngx_pagespeed/archive/v${PAGESPEED_VERSION}-stable.zip && \
-	unzip v${PAGESPEED_VERSION}-stable.zip
-
-RUN cd /tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable/ && \
+	unzip v${PAGESPEED_VERSION}-stable.zip && cd /tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable/ && \
 	psol_url=https://dl.google.com/dl/page-speed/psol/${PAGESPEED_VERSION}.tar.gz && \
 	[ -e scripts/format_binary_url.sh ] && psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL) && \
 	echo "URL: ${psol_url}" && \

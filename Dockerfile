@@ -92,7 +92,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
     cd / && rm -rf ${TMP_DIR}
 
 # Clean-up && Make PageSpeed cache writable
-RUN rm -rf /var/lib/apt/lists/* && rm -rf ${TMP_DIR}/* && \
+RUN rm -rf /var/lib/apt/lists/* && \
 	mkdir -p /tmp/ngx_pagespeed && \
 	chmod -R o+wr /tmp/ngx_pagespeed
 

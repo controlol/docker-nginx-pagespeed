@@ -31,10 +31,10 @@ RUN NPS_VERSION=1.13.35.2-stable \
     NGINX_USER=www-data \
     NGINX_GROUP=www-data \
     TMP_DIR=$(mktemp -d) &&\
-    curl -Ls https://github.com/apache/incubator-pagespeed-ngx/archive/v${NPS_VERSION}.tar.gz | tar -xvzf - -C ${TMP_DIR} && \
-    NPS_DIR=$(find ${TMP_DIR} -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
-    PSOL_URL=$(${NPS_DIR}/scripts/format_binary_url.sh ${NPS_DIR}/PSOL_BINARY_URL) && \
-    curl -Ls $PSOL_URL | tar -xzf - -C ${NPS_DIR} --exclude=lib/Debug && \
+#    curl -Ls https://github.com/apache/incubator-pagespeed-ngx/archive/v${NPS_VERSION}.tar.gz | tar -xvzf - -C ${TMP_DIR} && \
+#    NPS_DIR=$(find ${TMP_DIR} -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
+#    PSOL_URL=$(${NPS_DIR}/scripts/format_binary_url.sh ${NPS_DIR}/PSOL_BINARY_URL) && \
+#    curl -Ls $PSOL_URL | tar -xzf - -C ${NPS_DIR} --exclude=lib/Debug && \
     curl -Ls https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz | tar -xzf - -C ${TMP_DIR} &&\
     curl -Ls https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xzf - -C ${TMP_DIR} &&\
     curl -Ls https://github.com/madler/zlib/archive/v${ZLIB_VERSION}.tar.gz | tar -xzf - -C ${TMP_DIR} &&\
@@ -42,7 +42,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
     curl -Ls https://github.com/FRiCKLE/ngx_cache_purge/archive/${CACHE_PURGE_VERSION}.tar.gz | tar -xzf - -C ${TMP_DIR} &&\
     cd ${TMP_DIR}/nginx-release-${NGINX_VERSION} &&\
     ./auto/configure \
-    --add-module=${NPS_DIR} \
+#    --add-module=${NPS_DIR} \
     --add-module=${TMP_DIR}/ngx_cache_purge-${CACHE_PURGE_VERSION} \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \

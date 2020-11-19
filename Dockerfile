@@ -63,7 +63,7 @@ RUN cd /tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable/ && \
 	curl -L ${psol_url} | tar -xz
 
 # Build in additional Nginx modules
-RUN cd /tmp && git clone https://github.com/FRiCKLE/ngx_cache_purge.git && \
+RUN cd /tmp && git clone https://github.com/FRiCKLE/ngx_cache_purge.git
 
 # Build Nginx with support for PageSpeed
 RUN cd /tmp && \

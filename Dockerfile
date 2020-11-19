@@ -38,7 +38,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
         -C ${TMP_DIR} &&\
     curl -Ls https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\
-    curl -Ls https://github.com/madler/zlib/archive/v1.2.8.tar.gz | tar -xzf - \
+    curl -Ls https://github.com/madler/zlib/archive/v${ZLIB_VERSION}.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\
     curl -Ls https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VERSION}.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\

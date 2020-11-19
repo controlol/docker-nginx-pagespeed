@@ -28,10 +28,10 @@ RUN NPS_VERSION=1.13.35.2-stable \
     TMP_DIR=$(mktemp -d) &&\
     curl -Ls https://github.com/apache/incubator-pagespeed-ngx/archive/v${NPS_VERSION}.tar.gz | tar -xvzf - \
         -C ${TMP_DIR} && \
-    NPS_DIR=$(find . -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
-    PSOL_URL=$(${TMP_DIR}/${NPS_DIR}/scripts/format_binary_url.sh ${TMP_DIR}/${NPS_DIR}/PSOL_BINARY_URL) && \
+    NPS_DIR=$(find ${TMP_DIR} -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
+    PSOL_URL=$(${NPS_DIR}/scripts/format_binary_url.sh ${NPS_DIR}/PSOL_BINARY_URL) && \
     curl -Ls $PSOL_URL | tar -xvzf - \
-        -C ${TMP_DIR}/${NPS_DIR} --exclude=lib/Debug &&\
+        -C ${NPS_DIR} --exclude=lib/Debug &&\
     curl -Ls https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz | tar -xvzf - \
         -C ${TMP_DIR} &&\
     curl -Ls https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xvzf - \

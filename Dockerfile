@@ -30,7 +30,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
         -C ${TMP_DIR} && \
     NPS_DIR=$(find ${TMP_DIR} -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
     PSOL_URL=$(${NPS_DIR}/scripts/format_binary_url.sh ${NPS_DIR}/PSOL_BINARY_URL) && \
-    curl -Ls $PSOL_URL | tar -xvzf - \
+    curl -Ls $PSOL_URL | tar -xzf - \
         -C ${NPS_DIR} --exclude=lib/Debug && \
 	ls -la $NPS_DIR && \
     curl -Ls https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz | tar -xzf - \
@@ -39,7 +39,7 @@ RUN NPS_VERSION=1.13.35.2-stable \
         -C ${TMP_DIR} &&\
     curl -Ls https://github.com/madler/zlib/archive/v1.2.8.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\
-    curl -Ls https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VERSION}.tar.gz | tar -xvf - \
+    curl -Ls https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VERSION}.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\
     curl -Ls https://github.com/FRiCKLE/ngx_cache_purge/archive/${CACHE_PURGE_VERSION}.tar.gz | tar -xzf - \
         -C ${TMP_DIR} &&\

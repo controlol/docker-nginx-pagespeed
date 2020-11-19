@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/usr/local/bin/initialize.sh || exit 1
+# /usr/local/bin/initialize.sh || exit 1
 
 echo "starting nginx web server..."
 

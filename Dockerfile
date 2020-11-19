@@ -16,33 +16,36 @@ RUN apt-get install -y build-essential \
     zlib1g-dev 
 RUN rm -rf /var/lib/apt/lists/*
 
-RUN NPS_VERSION=1.13.35.2 \
+RUN NPS_VERSION=1.13.35.2-stable \
     PCRE_VERSION=8.44 \
     NGINX_VERSION=1.19.3 \
     ZLIB_VERSION=1.2.11 \
     OPENSSL_VERSION=1_1_1g \
+    CACHE_PURGE_VERSION=2.3 \
     NGINX_LOG_PATH=/var/log/nginx \
     NGINX_USER=www-data \
     NGINX_GROUP=www-data \
     TMP_DIR=$(mktemp -d) &&\
-    curl -Ls https://github.com/pagespeed/ngx_pagespeed/archive/v${NPS_VERSION}-beta.tar.gz | tar -xvzf - \
-        -C ${TMP_DIR} &&\
-    curl -Ls https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz | tar -xvzf - \
-        -C ${TMP_DIR}/ngx_pagespeed-${NPS_VERSION}-beta --exclude=lib/Debug &&\
+    curl -Ls https://github.com/apache/incubator-pagespeed-ngx/archive/v${NPS_VERSION}.tar.gz | tar -xvzf - \
+        -C ${TMP_DIR} && \
+    NPS_DIR=$(find . -name "*pagespeed-ngx-${NPS_VERSION}" -type d) \
+    PSOL_URL=$(${TMP_DIR}/${NPS_DIR}/scripts/format_binary_url.sh ${TMP_DIR}/${NPS_DIR}/PSOL_BINARY_URL) && \
+    curl -Ls $PSOL_URL | tar -xvzf - \
+        -C ${TMP_DIR}/${NPS_DIR} --exclude=lib/Debug &&\
     curl -Ls https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz | tar -xvzf - \
         -C ${TMP_DIR} &&\
-    curl -Ls ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xvzf - \
+    curl -Ls https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz | tar -xvzf - \
         -C ${TMP_DIR} &&\
     curl -Ls https://github.com/madler/zlib/archive/v1.2.8.tar.gz | tar -xvzf - \
         -C ${TMP_DIR} &&\
     curl -Ls https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VERSION}.tar.gz | tar -xzvf - \
         -C ${TMP_DIR} &&\
-    curl -Ls https://github.com/FRiCKLE/ngx_cache_purge/archive/2.3.tar.gz | tar -xzvf - \
+    curl -Ls https://github.com/FRiCKLE/ngx_cache_purge/archive/${CACHE_PURGE_VERSION}.tar.gz | tar -xzvf - \
         -C ${TMP_DIR} &&\
     cd ${TMP_DIR}/nginx-release-${NGINX_VERSION} &&\
     ./auto/configure \
         --add-module=${TMP_DIR}/ngx_pagespeed-${NPS_VERSION}-beta \
-	--add-module=${TMP_DIR}/2.3 \
+	--add-module=${TMP_DIR}/ngx_cache_purge-${CACHE_PURGE_VERSION} \
         --prefix=/etc/nginx \
 	--sbin-path=/usr/sbin/nginx \
 	--modules-path=/usr/lib/nginx/modules \

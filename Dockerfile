@@ -125,14 +125,15 @@ RUN rm -rf /var/lib/apt/lists/* && rm -rf /tmp/* && \
 	mkdir -p /var/cache/ngx_pagespeed && \
 	chmod -R o+wr /var/cache/ngx_pagespeed
 
-COPY ./config /etc/nginx
+COPY ./config  /etc/nginx
+COPY ./scripts /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/*
 
 EXPOSE 80
 WORKDIR /etc/nginx
 
-HEALTHCHECK --interval=5s --timeout=5s CMD curl -I http://127.0.0.1:8080/health || exit 1
+STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

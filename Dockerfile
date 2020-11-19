@@ -13,7 +13,8 @@ RUN apt-get install -y build-essential \
     libxslt1-dev \
     tar \
     unzip \
-    zlib1g-dev 
+    zlib1g-dev \
+    uuid-dev \
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN NPS_VERSION=1.13.35.2-stable \

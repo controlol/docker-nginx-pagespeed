@@ -125,6 +125,8 @@ RUN rm -rf /var/lib/apt/lists/* && rm -rf /tmp/* && \
 	mkdir -p /var/cache/ngx_pagespeed && \
 	chmod -R o+wr /var/cache/ngx_pagespeed
 
+COPY ./config /etc/nginx
+
 RUN chmod +x /usr/local/bin/*
 
 EXPOSE 80

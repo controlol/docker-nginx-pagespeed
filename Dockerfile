@@ -1,14 +1,7 @@
 FROM debian:stretch-slim
 
-ARG MAKE_J=4
 ARG NGINX_VERSION=1.19.3
 ARG PAGESPEED_VERSION=1.13.35.2
-ARG LIBPNG_VERSION=1.6.37
-
-ENV MAKE_J=${MAKE_J} \
-	NGINX_VERSION=${NGINX_VERSION} \
-	LIBPNG_VERSION=${LIBPNG_VERSION} \
-	PAGESPEED_VERSION=${PAGESPEED_VERSION}
 
 RUN apt-get update -y && \
 	apt-get upgrade -y
@@ -45,13 +38,6 @@ RUN apt-get install -y \
 	libjpeg62-turbo-dev \
 	libcurl4-openssl-dev
 
-# Build libpng
-#RUN cd /tmp && \
-#	curl -L http://prdownloads.sourceforge.net/libpng/libpng-${LIBPNG_VERSION}.tar.gz | tar -zx && \
-#	cd /tmp/libpng-${LIBPNG_VERSION} && \
-#	./configure --build=$CBUILD --host=$CHOST --prefix=/usr --enable-shared --with-libpng-compat && \
-#	make -j${MAKE_J} install V=0
-
 RUN cd /tmp && \
 	curl -O -L https://github.com/pagespeed/ngx_pagespeed/archive/v${PAGESPEED_VERSION}-stable.zip && \
 	unzip v${PAGESPEED_VERSION}-stable.zip
@@ -69,7 +55,7 @@ RUN cd /tmp && git clone https://github.com/FRiCKLE/ngx_cache_purge.git
 RUN cd /tmp && \
 	curl -L http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar -zx && \
 	cd /tmp/nginx-${NGINX_VERSION} && \
-	LD_LIBRARY_PATH=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}/usr/lib:/usr/lib ./configure \
+	./configure \
 	--prefix=/etc/nginx \
 	--sbin-path=/usr/sbin/nginx \
 	--modules-path=/usr/lib/nginx/modules \
@@ -112,9 +98,10 @@ RUN cd /tmp && \
 	--with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-1.19.3/debian/debuild-base/nginx-1.19.3=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \
 	--with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
 	--add-module=/tmp/ngx_cache_purge \
-	#--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable \
+	--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable \
 	&& \
-	make install --silent
+	make install 
+	#--silent
 
 # Clean-up
 RUN apt-get remove -y git

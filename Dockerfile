@@ -81,8 +81,6 @@ RUN cd /tmp && \
 	--http-client-body-temp-path=/var/cache/nginx/client_temp \
 	--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
 	--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-	--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-	--http-scgi-temp-path=/var/cache/nginx/scgi_temp \
 	--user=nginx \
 	--group=nginx \
 	--with-compat \
@@ -109,8 +107,11 @@ RUN cd /tmp && \
 	--with-stream_realip_module \
 	--with-stream_ssl_module \
 	--with-stream_ssl_preread_module \
-	--with-cc-opt='-g -O2 -fdebug-prefix-map=/data/builder/debuild/nginx-1.19.3/debian/debuild-base/nginx-1.19.3=. -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fPIC' \ 
-	--with-ld-opt='-Wl,-z,relro -Wl,-z,now -Wl,--as-needed -pie' \
+	--without-mail_pop3_module \
+	--without-mail_imap_module \
+	--without-mail_smtp_module \
+	--without-http_uwsgi_module \
+	--without-http_scgi_module \
 	--add-module=/tmp/ngx_cache_purge \
 	--add-module=/tmp/incubator-pagespeed-ngx-${PAGESPEED_VERSION}-stable && \
 	make install --silent

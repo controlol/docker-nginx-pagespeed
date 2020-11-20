@@ -54,8 +54,6 @@ RUN NPS_VERSION=1.13.35.2-stable \
     --lock-path=/var/run/nginx.lock \
     --group=${NGINX_GROUP} \
     --user=${NGINX_USER} \
-    --without-http_uwsgi_module \
-    --without-http_scgi_module \
     --with-cc-opt='-D_FORTIFY_SOURCE=2 -pie -fPIE -fstack-protector -Wformat -Wformat-security -fstack-protector -g -O1' \
     --with-ld-opt='-Wl,-z,now -Wl,-z,relro' \
     --with-compat \
